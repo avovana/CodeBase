@@ -100,3 +100,35 @@ int main()
     
     return 0;
 }
+
+// Take type of parametr pack by index
+/*
+variadic template
+*/
+#include <iostream>
+#include <typeinfo>
+
+struct SomeStruct
+{ };
+
+template <std::size_t I, typename T, typename ...Ts>
+struct nth_element_impl {
+    using type = typename nth_element_impl<I-1, Ts...>::type;
+};
+
+template <typename T, typename ...Ts>
+struct nth_element_impl<0, T, Ts...> {
+    using type = T;
+};
+
+template <std::size_t I, typename ...Ts>
+using nth_element = typename nth_element_impl<I, Ts...>::type;
+
+
+int main()
+{
+    nth_element<3, double, int, float, SomeStruct> variable;
+    std::cout << typeid(variable).name() << std::endl;
+    
+    return 0;
+}
