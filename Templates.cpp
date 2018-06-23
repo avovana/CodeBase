@@ -47,3 +47,28 @@ int main()
     Thingy thing3(1, 2);
 }
 
+// Sfinae
+/*
+std::enable_if
+*/
+#include <iostream>
+#include <type_traits>
+
+template<typename T>
+typename std::enable_if<std::is_integral<T>::value, T>::type
+sum(T a, T b) {
+  std::cout << "std::is_integral<T>\n";
+  return a + b;
+}
+
+template<typename T>
+typename std::enable_if<std::is_floating_point<T>::value, T>::type
+sum(T a, T b) {
+  std::cout << "std::is_floating_point<T>\n";
+  return a + b;
+}
+
+int main() {
+  std::cout << sum(4, 5) << '\n';
+  std::cout << sum(5.3, 2.4) << '\n';
+}
