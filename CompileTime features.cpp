@@ -22,3 +22,22 @@ int main() {
     static_assert(array[3] == 3, "Yay");
     return 0;
 }
+
+// compile-time array size computation
+/*
+godbolt output:
+main:
+  mov eax, 2
+  ret
+*/
+template<typename T, unsigned N>
+int len (T(&)[N]) 
+{ 
+  return N;
+}
+
+int main()
+{
+    int x[] = {6, 7};
+    return len(x);
+}
