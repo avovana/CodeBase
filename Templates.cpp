@@ -72,3 +72,36 @@ int main() {
   std::cout << sum(4, 5) << '\n';
   std::cout << sum(5.3, 2.4) << '\n';
 }
+
+// Sfinae
+// Choosing a proper constructor
+/*
+std::enable_if
+std::initializer_list
+*/
+#include <iostream>
+#include <initializer_list>
+
+template<typename T>
+struct A
+{
+    template<typename... Args>
+    A(Args&&... /*args*/)
+    { 
+        std::cout << "Constructor ... Args" << '\n';
+    }
+    
+    template<typename T2, typename = std::enable_if_t<std::is_same<T, T2>::value> >
+    A(std::initializer_list<T2> /*init_list*/)
+    { 
+        std::cout << "Constructor init_list" << '\n';
+    }
+};
+
+int main()
+{
+    A<int> example1({1,2});
+    A<int> example2({1.0, 2.3});
+    
+    return 0;
+}
