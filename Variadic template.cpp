@@ -132,3 +132,46 @@ int main()
     
     return 0;
 }
+
+// Applaying one function to all members of parametr pack
+/*
+initializer_list
+*/
+#include <iostream>
+#include <iterator>
+#include <initializer_list>
+#include <vector>
+
+template<typename T>
+struct A
+{
+    template<typename T2, typename = std::enable_if_t<std::is_same<T, T2>::value> >
+    A(std::initializer_list<T2> init_list)
+    { 
+        std::cout << "Constructor init_list" << '\n';
+        std::copy(init_list.begin(), init_list.end(), std::ostream_iterator<T>( std::cout, " "));
+        std::copy(init_list.begin(), init_list.end(), std::back_inserter(data));
+    }
+    
+    private:
+    std::vector<T> data;
+};
+
+template<typename T>
+T getHead(T arg)
+{
+    return arg;
+}
+
+template <class... Args>
+void doSomethingForAll(Args const&... args) 
+{
+    auto x = {getHead(args)...};
+    A<int> p(x);
+}
+
+int main()
+{
+    doSomethingForAll(1,2,3,4);
+    return 0;
+}
