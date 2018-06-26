@@ -41,3 +41,39 @@ int main()
     
     return 0;
 }
+
+// Array construction in compile time
+/*
+pack expansion
+std::integer_sequence
+*/
+
+#include <utility>
+#include <array>
+#include <iostream>
+//#include <boost/type_index.hpp> // better then <typeinfo>
+#include <typeinfo>
+
+template<typename T, T... Ns>
+constexpr auto make_iota_array(T const offset, std::integer_sequence<T, Ns...>) -> std::array<T, sizeof...(Ns)> 
+{
+    return {{(Ns + offset)...}};
+}
+
+template<typename T, T N>
+constexpr auto make_iota_array(T const offset = {})
+{
+    static_assert(N >= T{}, "no negative sizes");
+    return make_iota_array<T>(offset, std::make_integer_sequence<T, N>{});
+}
+
+int main() 
+{
+    static constexpr auto ar = make_iota_array<int, 10>(99);
+
+    //std::cout << boost::typeindex::type_id<decltype(ar)>().pretty_name() << '\n';
+    std::cout << typeid(ar).name() << '\n';
+
+    for (auto const n : ar)
+        std::cout << n << '\n';
+}
