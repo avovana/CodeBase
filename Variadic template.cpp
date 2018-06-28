@@ -255,3 +255,60 @@ int main()
         
     return 0;
 }
+
+// Iterating over parametr pack with C++14
+/*
+Function template partial specialization would be perfectly fit.
+In this case only two function will be required:
+
+1. standart:
+template <int number, typename Head,  typename... Rest>
+auto get_impl(Head firstValue, Rest... rest)
+{
+	return get_impl<number - 1>(rest...);
+}
+
+2. specialized:
+template <typename Head,  typename... Rest>
+auto get_impl<0, Head, Rest...>(Head firstValue, Rest... rest)
+{
+	return firstValue;
+}
+
+Recursion would be used to retrieve value on desired position.
+
+But function template partial specialization is not exist.
+Class(struct) template partial specialization exists.
+This example uses it.
+
+*/
+
+#include <iostream>
+#include <typeinfo>
+
+template <int number, typename Head,  typename... Rest>
+struct get_impl {
+    auto operator() (Head, Rest... rest) { return get_impl<number-1,Rest...>()(rest...); }
+};
+
+template <typename Head,  typename... Rest>
+struct get_impl<0,Head,Rest...> {
+    auto operator() (Head firstValue, Rest... rest) { return firstValue; }
+};
+
+
+template <int number, typename... Args>
+auto get(Args... args)
+{
+    std::cout << "Parametr pack size: " << sizeof...(args) << std::endl;
+    return get_impl<number,Args...>()(args...);
+}
+
+int main()
+{
+    auto value = get<2>(3, 4, 5.6);
+    std::cout << "value: " << value << '\n';
+    std::cout << "value has type: " << typeid(value).name() << '\n';
+        
+    return 0;
+}
