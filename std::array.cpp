@@ -42,6 +42,33 @@ int main()
     return 0;
 }
 
+// Array multiplication in compile time
+
+#include <array>
+#include <iostream>
+#include <utility>
+
+template<typename T>
+constexpr T mult(T const &a, T const &b) { return a * b; }
+
+template <class T, size_t... Is, size_t N>
+constexpr std::array<T, N> multiply(std::array<T, N> const &src, std::index_sequence<Is...>) {
+  return std::array<T, N>{{mult(src[Is], src[Is])...}}; 
+}
+
+template <class T, size_t... Is, size_t N>
+constexpr std::array<T, N> multiplyNumber(std::array<T, N> const &src, std::index_sequence<Is...>, T const &mul) {
+  return std::array<T, N>{{mult(src[Is], mul)...}}; 
+}
+
+int main(int argc, char *argv[]) {
+    constexpr std::array<int, 3> arr = {{1, 2, 3}};
+    constexpr auto t = multiply(arr, std::make_index_sequence<3>{});
+    //constexpr auto t = multiplyNumber(arr, std::make_index_sequence<3>{}, 2);
+    for (auto &el : t) std::cout << el << std::endl;
+    return 0;
+}
+
 // Array construction in compile time
 /*
 pack expansion
