@@ -153,3 +153,56 @@ int main()
     static_assert(arr[4] == 5);
     static_assert(arr[5] == 7);
 }
+
+// Array construction in compile time with generating custom sequence
+
+/*
+compile-time
+constexpr
+index_sequence
+array
+perfect forwarding
+variadic template
+pack expansion
+*/
+
+#include <array>
+#include <iostream>
+
+using element_type = std::array<bool, 7>;
+
+template <typename T, std::size_t N, typename F, std::size_t... I>
+constexpr auto create_table_impl(F&& func, std::index_sequence<I...>) {
+    return std::array<T, N>{{func(I)...}};
+}
+
+template <typename T, std::size_t N, typename F>
+constexpr auto create_table(F&& func) {
+    return create_table_impl<T, N>(std::forward<F>(func),
+                                   std::make_index_sequence<N>{});
+}
+
+constexpr element_type convert_to_element(size_t n) {
+    element_type element{
+        static_cast<bool>(n & 0x00000008), static_cast<bool>(n & 0x00000004),
+        static_cast<bool>(n & 0x00000002), static_cast<bool>(n & 0x00000001)};
+
+    return element;
+}
+
+int main(int, char* []) {
+    constexpr auto table = create_table<element_type, 16>(convert_to_element);
+
+    static_assert(table[7][3] == true, "");
+    static_assert(table[15][1] == true, "");
+
+    std::cout << std::boolalpha;
+    for (const auto& e : table) {
+        for (const auto& b : e) {
+            std::cout << b << '\t';
+        }
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
