@@ -28,7 +28,7 @@ class SparseArray
     }
 
     template<uint8_t Index>
-    constexpr ElementType get() {
+    constexpr ElementType get() const {
         if(isSet(Index))
             return values[countEntityNumber(Index)];
         else
@@ -39,11 +39,18 @@ class SparseArray
     constexpr auto operator +(const SparseArray<TOther, MaskOther>& other)  {
         constexpr decltype(Mask) NewMask = MaskOther | Mask;
 
-        //other.get<0>();
-        get<0>();
-        
-        auto seq2 = std::make_index_sequence<3>{};
+        auto seq2 = std::make_index_sequence<popcount(NewMask)>{};
         auto seq = make_sequence_impl(other, seq2);
+        
+        //auto seq_other = std::make_index_sequence<popcount(MaskOther)>{};
+        //std::cout << "popcount(MaskOther): " << popcount(MaskOther) << '\n';
+        //std::cout << "maxIndex(MaskOther) " << maxIndex(MaskOther) << '\n';
+        
+        constexpr auto max_index = maxIndex(MaskOther) > maxIndex(Mask) ? maxIndex(MaskOther) : maxIndex(Mask);
+        
+        auto seq_other = std::make_index_sequence<max_index>{};
+        
+        make_sequence_impl2(other, seq_other);
         
         return createArray<NewMask>(seq);
     }
@@ -61,9 +68,39 @@ class SparseArray
     }
         
     private:
+    //-----------------------
+    template <std::size_t idx, typename TOther, uint64_t MaskOther>
+    constexpr std::size_t print2(const SparseArray<TOther, MaskOther>& other) 
+    {
+        
+        //std::cout << "other.template get<idx>(): " << other.template get<idx>() << '\n' << '\n';
+        //std::cout << "other get<idx>() + get<idx>(): " << other.template get<idx>() + get<idx>() << '\n';
+        //return (other.template get<idx>()) + get<idx>();
+        //this.template get<idx>();
+        
+        return other.template get<idx>() + get<idx>();
+    }
+    
+    template <typename T2>
+    constexpr static T2 print(T2 arg) 
+    {
+        std::cout << "arg: " << arg << '\n';
+        return arg;
+    }
+
+    template <typename TOther, uint64_t MaskOther, std::size_t... Is> 
+    constexpr void make_sequence_impl2(const SparseArray<TOther, MaskOther>& other, std::index_sequence<Is...>) {
+        //auto x = {print(Is)...};
+        //auto x = {print2<Is>()...};
+        //auto x = {print2<Is>(SparseArray<float,  3>(1.0f, 2.0f))...};
+        auto x = {print2<Is>(other)...};
+    }
+//-----------------------
+    
     template <typename TOther, uint64_t MaskOther, typename Type>
     constexpr static Type generate_ith_number(const SparseArray<TOther, MaskOther>& other, const Type index) {
-        return index * 3; //return get<0> + other.get<0>();
+        //return get<index>() + other.template get<index>();
+        return index * 3;
     }
 
     template <typename TOther, uint64_t MaskOther, std::size_t... Is> 
@@ -83,6 +120,10 @@ class SparseArray
     constexpr static std::size_t isSet (size_t pos) {
         return (Mask >> pos) & 0b1;
     }
+
+    constexpr static std::size_t maxIndex (size_t value) {
+        return value != 0 ? 1 + maxIndex(value >> 1) : 0;
+    }
     
     static const int mask = Mask;
     static const int size = popcount(Mask);
@@ -96,7 +137,12 @@ int main ()
     SparseArray<double, 10> array1(      4.0,    7.0);
     
     std::cout << "array0.get<0>: " << array0.get<0>() << '\n';
-    std::cout << "array0.get<0>: " << array0.get<1>() << '\n';
+    std::cout << "array0.get<1>: " << array0.get<1>() << '\n';
+    
+    std::cout << "array1.get<0>: " << array1.get<0>() << '\n';
+    std::cout << "array1.get<1>: " << array1.get<1>() << '\n';
+    std::cout << "array1.get<2>: " << array1.get<2>() << '\n';
+    std::cout << "array1.get<3>: " << array1.get<3>() << '\n';
     
     auto sum = array0 + array1;
     std::cout << "sum.get<0>: " << sum.get<0>() << '\n';
