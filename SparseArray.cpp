@@ -43,8 +43,9 @@ class SparseArray
         auto sequence = make_sequence_impl(other, indexes);
 
         constexpr decltype(Mask) NewMask = MaskOther | Mask;
-
-        return createArray<NewMask>(sequence);
+        using NewType = decltype(values[0] + other.values[0]);
+        
+        return createArray<NewType, NewMask>(sequence);
     }
 
     constexpr static std::size_t countEntityNumber (size_t index) {
@@ -70,9 +71,9 @@ class SparseArray
         return std::index_sequence<generate_ith_number<Is>(other)...>{};
     }
 
-    template<uint64_t NewMask, std::size_t... I>
+    template<typename NewElementType, uint64_t NewMask, std::size_t... I>
     constexpr auto createArray(std::index_sequence<I...>) {
-        return SparseArray<T, NewMask>(I...);
+        return SparseArray<NewElementType, NewMask>(I...);
     }
 
     constexpr static std::size_t popcount (size_t value) {
