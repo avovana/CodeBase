@@ -312,3 +312,32 @@ int main()
         
     return 0;
 }
+
+// Iterating over parametr pack using get for tuple
+
+/*
+tuple
+variadic template
+pack expansion
+*/
+
+#include <iostream>
+#include <typeinfo>
+#include <tuple>
+
+
+template <int number, typename... Args>
+auto get(Args... args)
+{
+    std::cout << "Parametr pack size: " << sizeof...(args) << std::endl;
+    return std::get<number>(std::make_tuple(args...));
+}
+
+int main()
+{
+    auto value = get<2>(3, 4, 5.6);
+    std::cout << "value: " << value << '\n';
+    std::cout << "value has type: " << typeid(value).name() << '\n';
+        
+    return 0;
+}
