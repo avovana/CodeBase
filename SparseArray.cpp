@@ -37,17 +37,15 @@ class SparseArray
 
     template<typename TOther, uint64_t MaskOther, typename = EnableIfConvertible<TOther, T>>
     constexpr auto operator +(const SparseArray<TOther, MaskOther>& other)  {
-        constexpr auto max_index = maxIndex(MaskOther) > maxIndex(Mask) ? maxIndex(MaskOther) : maxIndex(Mask);
+        using Result = SparseArray<decltype(T{} + TOther{}), Mask | MaskOther>;
 
-        auto indexes = std::make_index_sequence<max_index>{};
-        auto sequence = make_sequence_impl(other, indexes);
-
-        constexpr decltype(Mask) NewMask = MaskOther | Mask;
-        using NewType = decltype(values[0] + other.values[0]);
-        
-        return createArray<NewType, NewMask>(sequence);
+        return [this, other]<uint8_t... EntityNumbers>(std::integer_sequence<uint8_t, EntityNumbers...>)
+        {
+            return Result{(get<Result::countIndex(EntityNumbers)>() + other.template get<Result::countIndex(EntityNumbers)>())...};
+        }(std::make_integer_sequence<uint8_t, Result::size>{});
     }
 
+    //private:
     constexpr static std::size_t countEntityNumber (size_t index) {
         uint64_t subMask{0};
 
@@ -60,7 +58,15 @@ class SparseArray
         return popcount(Mask & subMask);
     }
 
-    private:
+    constexpr static uint8_t countIndex(uint8_t entityNumber) { // обратный к countEntityNumber
+        uint8_t idx = 0;
+        while(countEntityNumber(idx) <= entityNumber) {
+            idx++;
+        }
+
+        return idx-1;
+    }
+    
     template <std::size_t index, typename TOther, uint64_t MaskOther>
     constexpr std::size_t generate_ith_number(const SparseArray<TOther, MaskOther>& other) {
         return get<index>() + other.template get<index>();
