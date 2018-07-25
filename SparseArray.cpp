@@ -7,22 +7,19 @@
 #include <bitset>
 
 template<typename T, uint64_t Mask>
-class SparseArray 
-{
+class SparseArray {
     template<typename T1, typename T2>
     using EnableIfConvertible = std::enable_if_t<std::is_convertible_v<T1, T2>>;
 
     public:
     using ElementType = T;
 
-    constexpr SparseArray() 
-        : values() { 
+    constexpr SparseArray() : values() { 
             std::cout << "Default ctor" << '\n';
-        }
+    }
 
     template<typename... Args>
-    constexpr SparseArray(Args&&... args) 
-    : values{args...} {
+    constexpr SparseArray(Args&&... args) : values{args...} {
         std::cout << "Args ctor. Mask = " << Mask << '\n';
     }
 
@@ -31,7 +28,7 @@ class SparseArray
         if(isSet(Index))
             return values[countEntityNumber(Index)];
         else
-            return T();
+            return T{};
     }
 
     template<typename TOther, uint64_t MaskOther, typename = EnableIfConvertible<TOther, T>>
@@ -70,6 +67,7 @@ class SparseArray
 
     constexpr static uint8_t countIndex(uint8_t entityNumber) { // обратный к countEntityNumber
         uint8_t idx = 0;
+        
         while(countEntityNumber(idx) <= entityNumber) {
             idx++;
         }
@@ -104,7 +102,6 @@ class SparseArray
         return value != 0 ? 1 + maxIndex(value >> 1) : 0;
     }
 
-    static const int mask = Mask;
     static const int size = popcount(Mask);
 
     ElementType values[size];  
