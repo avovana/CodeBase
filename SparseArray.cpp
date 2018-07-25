@@ -1,5 +1,4 @@
 // My SparseArray implementation
-// "operator+()" is implemented but doesn't work
 
 #include <cstdint>
 #include <iostream>
@@ -39,10 +38,21 @@ class SparseArray
     constexpr auto operator +(const SparseArray<TOther, MaskOther>& other)  {
         using Result = SparseArray<decltype(T{} + TOther{}), Mask | MaskOther>;
 
-        return [this, other]<uint8_t... EntityNumbers>(std::integer_sequence<uint8_t, EntityNumbers...>)
-        {
-            return Result{(get<Result::countIndex(EntityNumbers)>() + other.template get<Result::countIndex(EntityNumbers)>())...};
-        }(std::make_integer_sequence<uint8_t, Result::size>{});
+        std::make_integer_sequence<uint8_t, Result::size> entityNumbersSequence{};
+
+        return operatorPlusImpl1<Result>(other, entityNumbersSequence);
+    }
+    
+    template<typename Result, typename Other, uint8_t... EntityNumbers>
+    constexpr auto operatorPlusImpl1(const Other& other, std::integer_sequence<uint8_t, EntityNumbers...>) const {
+        std::integer_sequence<uint8_t, Result::countIndex(EntityNumbers)...> indicesSequence{};
+
+        return operatorPlusImpl2<Result>(other, indicesSequence);
+    }
+
+    template<typename Result, typename Other, uint8_t... Indices>
+    constexpr auto operatorPlusImpl2(const Other& other, std::integer_sequence<uint8_t, Indices...>) const {
+        return Result{ (get<Indices>() + other.template get<Indices>())... };
     }
 
     //private:
