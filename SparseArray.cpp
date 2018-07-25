@@ -115,19 +115,19 @@ int main ()
     SparseArray<float,  3> array0(1.0f, 2.0f);
     SparseArray<double, 10> array1(      4.0,    7.0);
 
-    //auto sum = array0 + array1;
-//
-    //static_assert(sizeof(sum) == sizeof(double) * 3, "Invalid sum array size");
+    auto sum = array0 + array1;
+
+    static_assert(sizeof(sum) == sizeof(double) * 3, "Invalid sum array size");
     static_assert(sizeof(array0) == sizeof(float) * 2, "Invalid array size");
     static_assert(sizeof(array1) == sizeof(double) * 2, "Invalid array size");
-//
-    //assert((std::is_same_v<typename decltype(sum)::ElementType, double> == true));
-//
-    //assert(sum.get<0>() == 1.0);
-    //assert(sum.get<1>() == 6.0);
-    //assert(sum.get<2>() == 0.0);
-    //assert(sum.get<3>() == 7.0);
-//
+
+    assert((std::is_same_v<typename decltype(sum)::ElementType, double> == true));
+
+    assert(sum.get<0>() == 1.0);
+    assert(sum.get<1>() == 6.0);
+    assert(sum.get<2>() == 0.0);
+    assert(sum.get<3>() == 7.0);
+
     SparseArray<float, 3> array2;
     assert(array2.get<0>() == 0.0f);
     assert(array2.get<1>() == 0.0f);
