@@ -41,3 +41,31 @@ int main()
     int x[] = {6, 7};
     return len(x);
 }
+
+// compile-time array creation with function (constexpr, array, index_sequence)
+
+#include <iostream>
+#include <utility>
+#include <array>
+
+template<typename T, std::size_t N, typename F, std::size_t... I>
+constexpr auto create_array_impl(F&& func, std::index_sequence<I...>) {
+    return std::array<T, N>{ {func(I)...} };
+}
+
+template<typename T, std::size_t N, typename F>
+constexpr auto create_array(F&& func) {
+    return create_array_impl<T, N>(std::forward<F>(func), std::make_index_sequence<N>{});
+}
+
+int main() {
+    const auto array = create_array<std::size_t, 4>([](auto e) {
+        return e * e;
+    });
+
+    for (auto e : array) {
+        std::cout << e << std::endl;
+    }
+
+    return 0;
+}
