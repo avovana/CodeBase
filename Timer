@@ -1,0 +1,51 @@
+#include <iostream>
+#include <chrono>
+#include <thread>
+
+using namespace std;
+using namespace chrono;
+
+class Timer
+{
+public:
+	Timer(std::chrono::duration<long double, ratio<60,1>> minutes)
+        : minutes_(minutes)
+        , start_time(high_resolution_clock::now())
+    { }
+
+    bool isElapsed() {
+    	auto current_time = high_resolution_clock::now();
+    	
+        auto timeToWait = duration_cast<seconds>(minutes_).count();
+    	auto timePassed = duration_cast<seconds>(current_time - start_time).count();
+        
+        if(timePassed > timeToWait) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+  
+private:
+    std::chrono::duration<long double, ratio<60,1>> minutes_;
+    high_resolution_clock::time_point start_time;
+};
+
+void longComputation() {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+int main(int, char**)
+{
+    Timer timer(3min);
+
+    for(int i = 0; i < 300; ++i) {
+        if(timer.isElapsed()) {
+            std::cout << "INFO. Timer elsapsed." << std::endl;
+            return 1;
+        }
+        longComputation();
+    }
+    
+    return 0;
+}
