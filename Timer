@@ -7,28 +7,23 @@ using namespace chrono;
 
 class Timer
 {
+    using Clock = high_resolution_clock;
+    
 public:
-	Timer(std::chrono::duration<long double, ratio<60,1>> minutes)
-        : minutes_(minutes)
-        , start_time(high_resolution_clock::now())
+    Timer(std::chrono::duration<long double> seconds)
+        : timeToWait(seconds)
+        , startTime(Clock::now())
     { }
 
-    bool isElapsed() {
-    	auto current_time = high_resolution_clock::now();
-    	
-        auto timeToWait = duration_cast<seconds>(minutes_).count();
-    	auto timePassed = duration_cast<seconds>(current_time - start_time).count();
+    bool isElapsed() const {
+        auto timePassed = duration_cast<seconds>(Clock::now() - startTime);
         
-        if(timePassed > timeToWait) {
-            return true;
-        } else {
-            return false;
-        }
+        return timePassed >= timeToWait;
     }
   
 private:
-    std::chrono::duration<long double, ratio<60,1>> minutes_;
-    high_resolution_clock::time_point start_time;
+    duration<long double> timeToWait;
+    Clock::time_point startTime;
 };
 
 void longComputation() {
@@ -37,7 +32,7 @@ void longComputation() {
 
 int main(int, char**)
 {
-    Timer timer(3min);
+    Timer timer(0.1min);
 
     for(int i = 0; i < 300; ++i) {
         if(timer.isElapsed()) {
